@@ -1,6 +1,9 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------- #
 # This program pulls the SIPP files from NBER and creates the .DTA for use         #
+# Authors: Laura Pilossoph; Rob Dent (robcdent@gmail.com)						   #
+# Please email the above with any comments, suggestions or corrections. 		   #
+# All errors are the authors' -- use at your own descretion!					   #
 # -------------------------------------------------------------------------------- #
 
 # tracking code
