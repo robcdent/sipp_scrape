@@ -3,7 +3,7 @@ set tracedepth 1
 set trace on
 set more off
 
-local panel = 1990
+local panel = 1992
 
 * 1990 - 1993: all waves are already merged together for these
 if inrange(`panel',1990,1993) {

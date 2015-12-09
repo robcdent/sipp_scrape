@@ -9,12 +9,60 @@ version 12
 cd 1993
 gl files: dir . files "*.dta"
 loc n_files: list sizeof global(files)
-while `n_files'< 13 {
+while `n_files'< 12 {
 	sleep 100000
 	gl files: dir . files "*.dta"
     loc n_files: list sizeof global(files)
 }
 cd ..
+* output correct start date *
+forval y=90/93 {   
+	if `y'==90 {
+		use 1990/sip90t2, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year90
+		ren tm8268 start_month90
+		gen spanel = 1990
+		save 1990/start_year_1990, replace
+		}
+	if `y'==91 {
+		use 1991/sip91t2, clear
+		destring id, replace
+		tostring id, replace
+		gen perid = id + entry + pnum
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year91
+		ren tm8268 start_month91
+		gen spanel = 1991
+		save 1991/start_year_1991, replace
+		}
+	if `y'==92 {
+		use 1992/sip92t1, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year92
+		ren tm8268 start_month92
+		gen spanel = 1992
+		save 1992/start_year_1992, replace
+		}
+	if `y'==93 {
+		use 1993/sip93t1, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year93
+		ren tm8268 start_month93
+		gen spanel = 1993
+		save 1993/start_year_1993, replace
+		}
+	}
 * load in the revised job id files for the 90-93 panels, save them to appropriate folder *
 forval y=90/93 {                                                                                                			// cycle through year
   	infix str suid 1-9 str entry 10-11 str pnum 12-14 panel 15-18 ///
