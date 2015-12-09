@@ -2,20 +2,8 @@ clear all
 set tracedepth 1
 set trace on
 set more off
-* hard code these so they work on laura's server session
 
-local panel = 2008
-
-gl sipp08 	"2008"	
-gl sipp04 	"2004"
-gl sipp01 	"2001"
-gl sipp96 	"1996"
-gl sipp93 	"1993"
-gl sipp92 	"1992"
-gl sipp91 	"1991"
-gl sipp90 	"1990"
-gl rev_jid	"rev_jobid_90_93"	
-
+local panel = 1990
 
 * 1990 - 1993: all waves are already merged together for these
 if inrange(`panel',1990,1993) {
@@ -92,7 +80,7 @@ if `panel'==1996 {
     clear all
     gl panel = 96																	// hop into directory
     forval k=1/12 {																	// loop over waves
-      use ${sipp${panel}}/sipp1996sip96w`k'd, clear										// append
+      use 1996/sipp1996sip96w`k'd, clear										// append
       sum swave
       gl wave = r(mean)
       do keepvars.do  														// after appending all waves, keep relevant variables, add in panel weights
@@ -114,7 +102,7 @@ if `panel'==2001 {
     clear all	
     gl panel = 01																	// hop into directory
     forval k=1/9 {																	// loop over waves
-      use ${sipp01}/sip01w`k', clear																// append
+      use 2001/sip01w`k', clear																// append
       sum swave
       gl wave = r(mean)
       do keepvars.do  

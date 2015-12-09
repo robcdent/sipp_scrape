@@ -17,7 +17,8 @@ http_proxy="http://p1web1.frb.org:8080/"	# only set if ${proxy}="on"
 # 3) How your machine calls Stata (see instructions)
 #export PATH=${PATH}:/Applications/Stata/StataSE.app/Contents/MacOS/.
 stata="stata13-se-batch 15"
- 
+#4) Which panels for the SIPP?
+panels="1990 1991 1992 1993 1996 2001 2004 2008"
 
 # --------------------------------- SYSTEM SET UP -------------------------------- #
 # setting the proxy from above
@@ -38,15 +39,15 @@ census="http://thedataweb.rm.census.gov/pub/sipp"
 echo "OS: ${os}; sed: ${sed}; proxy: ${proxy}; Stata: ${stata}"
 # ------------------------------------------------------------------------------ #
 # grab PCE data first and submit cleaning program
-source pce.bash
+source controls.bash
 while [ `ls -l pce.csv | wc -l` -lt 1 ]; do
 	sleep 10
 done
 
-${stata} pce.do
+${stata} controls.do
 
 # download and clean each panel individually to economize on disk space
-for year in 1990 1991 1992 1993 1996 2001 2004 2008; do	
+for year in ${panels}; do	
 	cd ${sipp_pull}
 	mkdir ${year}																# one folder per year
 	mkdir ${year}/components													# underlying files for the dta
@@ -71,8 +72,8 @@ for year in 1990 1991 1992 1993 1996 2001 2004 2008; do
 	fi
 	find . -type f -not \( -name '*w*'  -or -name '*fp*' \
 	               -or -name '*lw*' -or -name '*lgtwgt*' \) -delete				# remove files we don't need
-	gunzip *.Z 																	# some files are .Z
-	unzip \*.zip 																# unzip
+	gunzip -f *.Z 																# some files are .Z
+	unzip -o \*.zip 															# unzip
 	rm *.zip																	# remove zipped files
 	if [ ${year} -lt 1996 ] || [ ${year} -eq 2001 ]; then						# run .do files for non-dta years
 		for f in $(ls *.dct *.do); do                                   		# loop over dct & do files
@@ -106,7 +107,7 @@ for year in 1990 1991 1992 1993 1996 2001 2004 2008; do
 			done
 		   	cd ${sipp_pull}/${year}/components
 		   	wget -r -nd ${census}/${year}/sipp_revised_jobid_file_$year.zip 			# grab revised job IDs
-		   	unzip \*.zip  																# unzip all files
+		   	unzip -o \*.zip  															# unzip all files
 		   	rm *.zip 																	# delete zips
 		   	cd ${sipp_pull}
 		   	${sed} "s/.*local year =.*/local year = ${yy}/" start_date_1990_93.do  		# modify .do file for current year 
@@ -122,7 +123,6 @@ for year in 1990 1991 1992 1993 1996 2001 2004 2008; do
 		 			done
 		 			${sed} "s/.*local panel =.*/local panel = 19${yy}/" extract_sipp_all.do # modify .do file for current year 
 		 			${stata} extract_sipp_all.do
-		 			#${sed} "s/local panel = 19${yy}/local panel = /" extract_sipp_all.do # modify .do file for current year 
 		 			while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do
 		 				sleep 100
 		 			done
@@ -158,7 +158,6 @@ for year in 1990 1991 1992 1993 1996 2001 2004 2008; do
 		cd ${sipp_pull}
 		${sed} "s/.*local panel =.*/local panel = ${year}/" extract_sipp_all.do # modify .do file for current year 
 		${stata} extract_sipp_all.do
-		#${sed} "s/local panel = ${year}/local panel = /" extract_sipp_all.do # modify .do file for current year 
 		yy=${year:2:2}
 		while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do					# once final .dta is outputted, delete components
 		 	echo "wait to drop ${year}"
@@ -174,5 +173,6 @@ for i in {1..9}; do
     rm -f -r *.po${i}*
     rm -f -r *.pe${i}*
 done
+rm -rf *.bak
 
 >&2

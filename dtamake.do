@@ -6,7 +6,7 @@ set tracedepth 1
 set trace on
 
 
-local year = 01
+local year = 93
 local w90 8
 local w91 8
 local w92 9

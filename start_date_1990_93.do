@@ -24,7 +24,6 @@ end
 
 pwd
 * set up job start year for respondent's 
-
 * first job in early waves
 
 if `year'==90 {
@@ -43,6 +42,7 @@ if `year'==90 {
 	gen spanel = 1990
 	save 1990/start_year_1990, replace
 	}
+
 else if `year'==91 {
 	cd 1991
 	wait 1
@@ -60,6 +60,7 @@ else if `year'==91 {
 	gen spanel = 1991
 	save 1991/start_year_1991, replace
 	}
+
 else if `year'==92 {
 	cd 1992
 	wait 1
@@ -76,6 +77,7 @@ else if `year'==92 {
 	gen spanel = 1992
 	save 1992/start_year_1992, replace
 	}
+
 else {
 	cd 1993
 	wait 1
@@ -92,4 +94,5 @@ else {
 	gen spanel = 1993
 	save 1993/start_year_1993, replace
 	}
+
 
