@@ -44,7 +44,7 @@ while [ `ls -l pce.csv | wc -l` -lt 1 ]; do
 	sleep 10
 done
 
-${stata} controls.do
+${stata} do/controls.do
 
 # download and clean each panel individually to economize on disk space
 for year in ${panels}; do	
@@ -84,8 +84,8 @@ for year in ${panels}; do
 		done
 			cd ${sipp_pull}
 			yy=${year:2:2}														# last two digits for year
-			${sed} "s/.*local year =.*/local year = ${yy}/" dtamake.do  		# replace entire line for local year
-			${stata} $sipp_pull/dtamake.do 										# submit job for year
+			${sed} "s/.*local year =.*/local year = ${yy}/" do/dtamake.do  		# replace entire line for local year
+			${stata} $sipp_pull/do/dtamake.do 									# submit job for year
 		if [ ${year} -lt 1996 ]; then
 			cd ${sipp_pull}/${year}/components
 			if [ ${year} -gt 1991 ]; then
@@ -110,19 +110,16 @@ for year in ${panels}; do
 		   	unzip -o \*.zip  															# unzip all files
 		   	rm *.zip 																	# delete zips
 		   	cd ${sipp_pull}
-		   	${sed} "s/.*local year =.*/local year = ${yy}/" start_date_1990_93.do  		# modify .do file for current year 
-		   	${stata} start_date_1990_93.do 												# submit job for start dates
-		   	#${sed} "s/local year = ${yy}/local year = /" start_date_1990_93.do			# modify .do file back
 		  	if [ ${year} -eq 1993 ]; then												# proceed if on last of the early 90s
 		  		cd ${sipp_pull}
-		 		${stata} final_90_93.do 												# submit 90-93 aggregation program
+		 		${stata} do/final_90_93.do 												# submit 90-93 aggregation program
 		 		for yy in 90 91 92 93; do 
 		 			while [ `ls -l sipp${yy}.dta | wc -l` -lt 1 ]; do					# once final .dta is outputted, delete components
 		 				echo "wait to drop 19${yy}"
 		 				sleep 100
 		 			done
-		 			${sed} "s/.*local panel =.*/local panel = 19${yy}/" extract_sipp_all.do # modify .do file for current year 
-		 			${stata} extract_sipp_all.do
+		 			${sed} "s/.*local panel =.*/local panel = 19${yy}/" do/extract_sipp_all.do # modify .do file for current year 
+		 			${stata} do/extract_sipp_all.do
 		 			while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do
 		 				sleep 100
 		 			done
@@ -156,8 +153,8 @@ for year in ${panels}; do
 			done
 		fi
 		cd ${sipp_pull}
-		${sed} "s/.*local panel =.*/local panel = ${year}/" extract_sipp_all.do # modify .do file for current year 
-		${stata} extract_sipp_all.do
+		${sed} "s/.*local panel =.*/local panel = ${year}/" do/extract_sipp_all.do # modify .do file for current year 
+		${stata} do/extract_sipp_all.do
 		yy=${year:2:2}
 		while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do					# once final .dta is outputted, delete components
 		 	echo "wait to drop ${year}"
