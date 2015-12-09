@@ -4,6 +4,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{lscape}
 \usepackage{tikz}
+\usepackage{graphicx}
 \usepackage[hyperfootnotes=false,colorlinks=false]{hyperref}
 \usetikzlibrary{shapes.callouts,decorations.pathreplacing}
 \tikzset{
@@ -21,11 +22,12 @@
 \begin{document}
 \newgeometry{left=1.5in, right=1.5in, bottom=0.8in, top=1.5in}
 \begin{center}
-{\large \sc SIPP Program Documentation and Instructions}\\
-{\it Last Updated: \today\footnote{Please address questions, comments or errors to Rob Dent, \href{mailto:robcdent@gmail.com}{robcdent@gmail.com} or Laura Pilossoph, \href{mailto:pilossoph@gmail.com}{pilossoph@gmail.com}}}
+{\Large \sc SIPP Program Documentation and Instructions\footnote{Please address questions, comments or errors to Rob Dent, \href{mailto:robcdent@gmail.com}{robcdent@gmail.com} or Laura Pilossoph, \href{mailto:pilossoph@gmail.com}{pilossoph@gmail.com}. Any errors or typos within the programs are those of the authors, use at your own discretion.}}\\
+\vspace{.1in}
+{\it \large Last Updated: \today}
 \end{center}
 \vspace{1in}
-%\tableofcontents
+\tableofcontents
 
 \newpage
 \vspace{0.5in}
@@ -36,12 +38,12 @@
 	\begin{itemize}
 	\item The main script for downloading SIPP data and submitting Stata jobs. All user options (proxy, Stata version, OS, etc.) should be set at the top of this file.
 	\item Downloads SIPP data by panel -- default is set to 1990-2008 but the user can pre-select any specific panel year. {\bf Note} 1990-1993 must always be downloaded together 			and in sequential order (i.e. don't submit 1992 by itself or 1990, 1992, 1991, 1993).
-	\item Refer to section \hyperref[sec:workflow]{Section \ref*{sec:workflow}} for the outline of how the program moves through each SIPP panel. The panels vary by what kind of datafile is available, whether or not 			they require topical modules or other external files, etc. 
+	\item Refer to \hyperref[sec:workflow]{Section \ref*{sec:workflow}} for the outline of how the program moves through each SIPP panel. The panels vary by what kind of datafile is available, whether or not 			they require topical modules or other external files, etc. 
 	\item User options should be set in lines 10-21:
 		\begin{enumerate}
 		\item {\tt os} -- this should be {\tt mac}, {\tt linux} or {\tt windows}. Certain bash commands behave different across operating systems
 		\item {\tt proxy} -- should be {\tt on} or {\tt off} depending on how your machine's Internet functions. If {\tt proxy} = {\tt on}, set the {\tt http\_proxy} parameter to the correct host and port.
-		\item {\tt stata} -- include how your machine calls Stata from bash (see section\hyperref[sec:instructions]{Section \ref*{sec:instructions}} for more detail)
+		\item {\tt stata} -- include how your machine calls Stata from bash (see \hyperref[sec:instructions]{Section \ref*{sec:instructions}} for more detail)
 		\item {\tt panels} -- which years of the SIPP you want to pull. {\bf Note} that 1990-1993 panels must always be pulled at the same time and in order, i.e. populating the {\tt panels} value with {\tt 1991 1990 1992 1993} will result in an error. The default value is to download all panels: {\tt 1990 1991 1992 1993 1996 2001 2004 2008}.
 		\end{enumerate}
 	\item The program operates inside one major loop and relies primarily on the {\tt wget} and {\tt sed} commands for bash, submitting Stata jobs along the way.
@@ -67,13 +69,10 @@
 	\item Line 6 contains the same ``{\tt local year = }'' to change with each panel that the bash script is looping through
 	\item {\tt extract\_sipp\_all.do} calls {\tt keepvars.do} to select which variables to keep and what to rename them to (more on this below)
 	\end{itemize}
-\item {\tt start\_date\_1990\_93.do}
-	\begin{itemize}
-	\item For each panel in 1990-93, brings in the topical module that contains the start year and month of each respondent's {\it first} job (this is contained in the core waves in later panels)
-	\end{itemize}
 \item {\tt final\_90\_93.do}
 	\begin{itemize}
 	\item Cleans the 1990-93 waves and fixes some of their panel-specific characteristics
+	\item For each panel in 1990-93, brings in the topical module that contains the start year and month of each respondent's {\it first} job (this is contained in the core waves in later panels)
 	\item The job IDs for 1990-93 have corrected files posted by the Census -- cleans these and merges them in according to Stinson (2003)
 	\item Renames the 1990-93 variables to the 1996-2008 variable names (after the 1996 reorganization)
 	\item Extracts correct start date from the topical modules (this is only done for the 1990-93 panels, from {\tt start\_date\_1990\_93.do})
@@ -161,5 +160,11 @@ In general, the only thing that changes across operating systems is the way
 	\item Populate other user options according to user-specific details
 	\end{itemize}
 
+\newpage
+\section{Disk Space}
+\begin{center}
+\includegraphics{sipp_disk_space.pdf}
+\end{center}
+The plot above shows a time series of the total disk space taken up for the entire {\tt sipp\_scrape} folder while downloading all panels from 1990-2008. The program periodically erases intermediate input files while running in an effort to economize on space but it still hits upwards of 20Gb before finishing up with just about 5Gb. Be sure your machine has enough disk space to handle all of the files before running the script. 
 
 \end{document}

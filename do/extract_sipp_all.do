@@ -3,7 +3,7 @@ set tracedepth 1
 set trace on
 set more off
 
-local panel = 1992
+local panel = 1991
 
 * 1990 - 1993: all waves are already merged together for these
 if inrange(`panel',1990,1993) {
@@ -12,7 +12,7 @@ if inrange(`panel',1990,1993) {
   	use "sipp`j'.dta", clear										    // already merged waves for these in "fixjobids", just use that data
 	  global panel = `j'
 	  save sipp`j', replace											    // resave
-	  do keepvars.do  													// keep only relevant variables, add in panel weights
+	  do do/keepvars.do  													// keep only relevant variables, add in panel weights
   	clear all
 }
 
@@ -42,7 +42,7 @@ if inlist(`panel',2004,2008) {
     	
     gl wave = r(mean)															// append
     cd ..
-    do keepvars.do
+    do do/keepvars.do
     cd `panel'
     }
   cd ..
@@ -83,7 +83,7 @@ if `panel'==1996 {
       use 1996/sipp1996sip96w`k'd, clear										// append
       sum swave
       gl wave = r(mean)
-      do keepvars.do  														// after appending all waves, keep relevant variables, add in panel weights
+      do do/keepvars.do  														// after appending all waves, keep relevant variables, add in panel weights
       }
     erase sipp_96w1.dta
     use sip96w1.dta, clear
@@ -105,7 +105,7 @@ if `panel'==2001 {
       use 2001/sip01w`k', clear																// append
       sum swave
       gl wave = r(mean)
-      do keepvars.do  
+      do do/keepvars.do  
       }
 
     use sip1w1.dta, clear
