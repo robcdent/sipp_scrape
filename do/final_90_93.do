@@ -4,39 +4,74 @@ set more off
 pause on
 version 12
 
-
-* hard code these so they work on laura's server session
-
-gl sipp08 	"2008"	
-gl sipp04 	"2004"
-gl sipp01 	"2001"
-gl sipp96 	"1996"
-gl sipp93 	"1993"
-gl sipp92 	"1992"
-gl sipp91 	"1991"
-gl sipp90 	"1990"
-
 * we want the files to be fully extracted from the raw data -- write a loop to 
 * check the progress on 1993 (the last year)
 cd 1993
 gl files: dir . files "*.dta"
 loc n_files: list sizeof global(files)
-while `n_files'< 13 {
+while `n_files'< 12 {
 	sleep 100000
 	gl files: dir . files "*.dta"
     loc n_files: list sizeof global(files)
 }
 cd ..
-
+* output correct start date *
+forval y=90/93 {   
+	if `y'==90 {
+		use 1990/sip90t2, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year90
+		ren tm8268 start_month90
+		gen spanel = 1990
+		save 1990/start_year_1990, replace
+		}
+	if `y'==91 {
+		use 1991/sip91t2, clear
+		destring id, replace
+		tostring id, replace
+		gen perid = id + entry + pnum
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year91
+		ren tm8268 start_month91
+		gen spanel = 1991
+		save 1991/start_year_1991, replace
+		}
+	if `y'==92 {
+		use 1992/sip92t1, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year92
+		ren tm8268 start_month92
+		gen spanel = 1992
+		save 1992/start_year_1992, replace
+		}
+	if `y'==93 {
+		use 1993/sip93t1, clear
+		destring id, replace
+		tostring id, replace
+		rename (id entry pnum) (ssuid eentaid epppnum)
+		keep ssuid eentaid epppnum tm8270 tm8268
+		ren tm8270 start_year93
+		ren tm8268 start_month93
+		gen spanel = 1993
+		save 1993/start_year_1993, replace
+		}
+	}
 * load in the revised job id files for the 90-93 panels, save them to appropriate folder *
 forval y=90/93 {                                                                                                			// cycle through year
   	infix str suid 1-9 str entry 10-11 str pnum 12-14 panel 15-18 ///
     wave 19-20 jobid 21-22 jobid_revised 23-24 ///
     jobid_revised_flag 25 using ///
-    ${sipp`y'}/components/sipp_revised_jobid_file_19`y'.dat, clear                                							// infix (short, easiest)
+    19`y'/components/sipp_revised_jobid_file_19`y'.dat, clear                                							// infix (short, easiest)
     gen puid = suid+entry+pnum
     describe puid sui entry pnum
-    save ${sipp`y'}/rev_jobid_`y', replace                                                                     		 		// save for merge
+    save 19`y'/rev_jobid_`y', replace                                                                     		 		// save for merge
    }	
 /* 1990-1993 waves need renaming as well as fixing job ID inconsistency */
 
@@ -50,7 +85,7 @@ forval y=90/93 {
     	}
     	
   	forval i=1/`max_wave' {
-	  	use ${sipp`y'}/sip`y'w`i', clear											// load in the data from the wave
+	  	use 19`y'/sip`y'w`i', clear											// load in the data from the wave
 		gen puid = suid+entry+pnum													// generate unique person id
 	  	bys puid panel wave: keep if _n==1											// job id doesn't change within wave, keep first observation per individual									
 	  	keep puid wave panel ws12002 ws22102 suid entry pnum                        // keep job numbers, identifiers
@@ -62,7 +97,7 @@ forval y=90/93 {
 	   	drop jobid2
 	   	ren jobid1 jobid
 	   	gen job_num=1
-	   	save ${sipp`y'}/firstjobs_`y'_`i', replace								 	// save in ``first job file"
+	   	save 19`y'/firstjobs_`y'_`i', replace								 	// save in ``first job file"
 	  	restore
 	  	preserve																	// ... do the same for the second job
 	   	sort puid
@@ -70,35 +105,35 @@ forval y=90/93 {
 	   	ren jobid2 jobid
 	   	drop jobid1
 	   	gen job_num=2
-	   	save ${sipp`y'}/secondjobs_`y'_`i', replace
+	   	save 19`y'/secondjobs_`y'_`i', replace
 	  	restore
-	  	use ${sipp`y'}/firstjobs_`y'_`i', clear
-	  	append using ${sipp`y'}/secondjobs_`y'_`i'
-	  	save ${sipp`y'}/jobid_rev_`y'_`i', replace									// this file will be unique by person id and job number
-	  	erase ${sipp`y'}/firstjobs_`y'_`i'.dta
-	  	erase ${sipp`y'}/secondjobs_`y'_`i'.dta
+	  	use 19`y'/firstjobs_`y'_`i', clear
+	  	append using 19`y'/secondjobs_`y'_`i'
+	  	save 19`y'/jobid_rev_`y'_`i', replace									// this file will be unique by person id and job number
+	  	erase 19`y'/firstjobs_`y'_`i'.dta
+	  	erase 19`y'/secondjobs_`y'_`i'.dta
   		}
 	clear																		 	// append all waves together, now unique by person id, wave , and job number
 	forval i=1/`max_wave' {
-  		append using ${sipp`y'}/jobid_rev_`y'_`i'
-  		erase ${sipp`y'}/jobid_rev_`y'_`i'.dta
+  		append using 19`y'/jobid_rev_`y'_`i'
+  		erase 19`y'/jobid_rev_`y'_`i'.dta
   		}
 
 	keep puid wave panel jobid job_num
 	replace panel = panel+1900
 	count if job_num==.
-	merge 1:1 puid wave jobid using ${sipp`y'}/rev_jobid_`y'.dta
+	merge 1:1 puid wave jobid using 19`y'/rev_jobid_`y'.dta
 	drop _merge jobid
 	ren jobid_revised jobid
 
 	reshape wide jobid jobid_revised_flag, i(panel wave puid) j(job_num)		// now unique by person id, wave 
 	ren (jobid1 jobid2) (ws12002 ws22102)
-	save ${sipp`y'}/fixed_jobid_`y', replace 
+	save 19`y'/fixed_jobid_`y', replace 
 }
 
 clear
 forval y=90/93 {
-  	cd ${sipp`y'}
+  	cd 19`y'
   	local files: dir . files "*`y'w*.dta"
   	foreach f of local files {
     	disp "appending `f'"
@@ -115,21 +150,21 @@ gen puid = suid+entry+pnum
 ren ws12002 ws12002_old
 ren ws22102 ws22102_old
 merge m:1 puid panel wave using ///
-  ${sipp`y'}/fixed_jobid_`y', keep(match master) 
+  19`y'/fixed_jobid_`y', keep(match master) 
 
 
 
 /* fix imputation flags */
 drop _merge
-save ${sipp`y'}/sipp_`y', replace
+save 19`y'/sipp_`y', replace
 
 
 
 /* get education variables from topical module 2 */
 
-use ${sipp`y'}/sip`y't2, clear
+use 19`y'/sip`y't2, clear
 if inlist(`y',92,93) {
-	merge m:m id entry pnum wave using ${sipp`y'}/sip`y't1
+	merge m:m id entry pnum wave using 19`y'/sip`y't1
 	}
 rename id suid
 destring suid, replace
@@ -138,7 +173,7 @@ gen puid = suid+entry+pnum
 rename rotation rot
 keep higrade grd_cmp tm8400 tm8408 tm8416 tm8422 tm8430 suid rot pnum wave entry puid
 
-merge 1:m puid wave using ${sipp`y'}/sipp_`y'
+merge 1:m puid wave using 19`y'/sipp_`y'
 
 
 * use crosswalk --> ../documentation/93_96_var_crosswalk.pdf
