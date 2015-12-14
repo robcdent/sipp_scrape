@@ -157,7 +157,7 @@ for year in ${panels}; do
 		${stata} do/extract_sipp_all.do
 		yy=${year:2:2}
 		while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do					# once final .dta is outputted, delete components
-		 	echo "wait to drop ${year}"
+		 	echo "waiting to drop intermediate ${year} files..."
 		 	sleep 100
 		done
 		rm -rf ${year}

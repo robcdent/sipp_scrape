@@ -80,6 +80,18 @@
 \item {\tt keepvars.do}
 	\begin{itemize}
 	\item Keeps relevant variables, merges in longitudinal weights and renames variables for convenience
+	\item {\bf Note!} To add or subtract variables:
+	\begin{itemize}
+		\item For the 1990-93 panels:  
+		\begin{enumerate}
+			\item Edit ``{\tt final\_90\_93.do}'' around line 180 to rename the 1990-93 variable name to the 					1996-present variable name.\footnote{The 1990-93 to 1996-present variable crosswalk can be found: \href{https://www.census.gov/content/dam/Census/programs-surveys/sipp/methodology/SIPP_USERS_Guide_Third_Edition_2001.pdf}{here} on page {\tt A-1}.}
+			\item Edit ``{\tt keepvars.do}'' around line 24 and change the keep statement to include the added 				variables
+		\end{enumerate} 
+		\item For the 1996-2008 panels:
+		\begin{enumerate}
+			\item Edit ``{\tt keepvars.do}'' around line 7 to add/subtract variables.
+		\end{enumerate}
+	\end{itemize}
 	\item Works depending on the {\tt \$\{panel\}} global passed to it from {\tt extract\_sipp\_all.do} above
 	\end{itemize}
 \item {\tt controls.do}
