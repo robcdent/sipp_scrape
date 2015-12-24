@@ -145,6 +145,8 @@ gen union = (eunion1==1)													 	// belong to a union
 merge m:1 h_year h_month using pce.dta 
 
 if inlist(${panel},90 ,91,92,93) {
+  *merge in topical module data
+  merge m:1 ssuid eentaid epppnum wave srotaton using "19${panel}/sip${panel}tm_a", gen(tmmerge)
 	save sip${panel}, replace
   erase sipp_${panel}.dta
 }
