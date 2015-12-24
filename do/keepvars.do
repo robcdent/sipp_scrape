@@ -16,7 +16,8 @@ if inlist(${panel},96,01,04,08) {
   	eeno1 eafnow eresnss1 rmwkwjb eafever 
   	swave eeno1 eeno2 eunion1 ecntrc1 apmsum1 apyrate1 
   	spanel renroll eocctim1 ebiznow1 edisabl 
-  	ersend1 ersend2 gvarstr ghlfsam grgc  ;
+  	ersend1 ersend2 gvarstr ghlfsam grgc
+    emoonlit ejobcntr ;
   	# delimit cr ;
 	}
 
