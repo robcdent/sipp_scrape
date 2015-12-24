@@ -38,7 +38,7 @@ nber="http://www.nber.org/sipp"
 census="http://thedataweb.rm.census.gov/pub/sipp"
 echo "OS: ${os}; sed: ${sed}; proxy: ${proxy}; Stata: ${stata}"
 # ------------------------------------------------------------------------------ #
-# grab PCE data first and submit cleaning program
+# grab PCE data first and submit cleaning program 
 source controls.bash
 while [ `ls -l pce.csv | wc -l` -lt 1 ]; do
 	sleep 10
@@ -71,7 +71,8 @@ for year in ${panels}; do
     	wget -r -nd -l 1 -A dta.zip ${nber}/${year}/							# download dta's directly
 	fi
 	find . -type f -not \( -name '*w*'  -or -name '*fp*' \
-	               -or -name '*lw*' -or -name '*lgtwgt*' \) -delete				# remove files we don't need
+	               -or -name '*lw*' -or -name '*lgtwgt*' \
+	               -or -name '*t*' \) -delete									# remove files we don't need
 	gunzip -f *.Z 																# some files are .Z
 	unzip -o \*.zip 															# unzip
 	rm *.zip																	# remove zipped files
@@ -86,12 +87,14 @@ for year in ${panels}; do
 			yy=${year:2:2}														# last two digits for year
 			${sed} "s/.*local year =.*/local year = ${yy}/" do/dtamake.do  		# replace entire line for local year
 			${stata} $sipp_pull/do/dtamake.do 									# submit job for year
-		if [ ${year} -lt 1996 ]; then
+		if [ ${year} -lt 1996 ] || [ ${year} -eq 2001 ]; then
 			cd ${sipp_pull}/${year}/components
-			if [ ${year} -gt 1991 ]; then
-				modules="1 2"
+			if [ ${year} -gt 1991 ] && [ ${year} -ne 2001 ]; then
+				modules="1 2 4 7"
+			elif [ ${year} -eq 2001 ]; then
+				modules="3 6 9"
 			else
-				modules="2"
+				modules="2 4 7"
 			fi
 			for tm in ${modules}; do
 				wget -r -nd ${nber}/${year}/sipp${yy}t${tm}.dat.Z       				# Z files
@@ -100,6 +103,16 @@ for year in ${panels}; do
 				gunzip -f *.Z             												# unzip with overwrite
 				${sed} "s/log/*log/g" sip${yy}t${tm}.do        							# turn logging off
 				${sed} "s/\/homes\/data\/sipp\/${year}\///g" sip${yy}t${tm}.dct     	# remove NBER dir
+				if [ ${year} -eq 2001 ]; then
+					${sed} "s/\/homes\/data\/sipp\/2001\///g" sip${yy}t${tm}.do   		# fix messed up lines in 2001 do files
+					${sed} "s/sipp${yy}t${tm}.dta/sip${yy}t${tm}.dta/" sip${yy}t${tm}.do 
+					${sed} "/save ..\/sip${yy}t${tm}.dta, replace;/d" sip${yy}t${tm}.do 
+					${sed} "/erase sip\*t.dat/d" sip${yy}t${tm}.do 
+				fi
+				if [ ${year} -eq 1990 ] && [ ${tm} -eq 7 ]; then
+					${sed} "/#delimit cr/d" "sip${yy}t${tm}.do"							# fix lines that are messing up 2001t7 do file
+					${sed} "/*saveold \`dta_name', replace/d" "sip${yy}t${tm}.do"
+				fi
 				echo "save ../sip${yy}t${tm}.dta, replace;" >> sip${yy}t${tm}.do    	# add in line for saving
 				echo "erase sip*t.dat" >> sip${yy}t${tm}.do
 				echo "  " >> sip${yy}t${tm}.do           								# add empty line for .do file
@@ -118,6 +131,12 @@ for year in ${panels}; do
 		 				echo "wait to drop 19${yy}"
 		 				sleep 100
 		 			done
+		 			${sed} "s/.*local panel =.*/local panel = 19${yy}/" do/topicalmodules.do # modify .do file for current year 
+					${stata} do/topicalmodules.do
+					while [ ! -e 19${yy}/sip${yy}tm_a.dta ]; do
+						echo "waiting for topical modules"
+						sleep 10
+					done
 		 			${sed} "s/.*local panel =.*/local panel = 19${yy}/" do/extract_sipp_all.do # modify .do file for current year 
 		 			${stata} do/extract_sipp_all.do
 		 			while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do
@@ -153,9 +172,16 @@ for year in ${panels}; do
 			done
 		fi
 		cd ${sipp_pull}
+		# rachel: figure out why this isn't running!!
+		${sed} "s/.*local panel =.*/local panel = ${year}/" do/topicalmodules.do # modify .do file for current year 
+		${stata} do/topicalmodules.do
+		yy=${year:2:2}
+		while [ ! -e ${year}/sip${yy}tm_a.dta ]; do
+			echo "waiting for topical modules"
+			sleep 10
+		done
 		${sed} "s/.*local panel =.*/local panel = ${year}/" do/extract_sipp_all.do # modify .do file for current year 
 		${stata} do/extract_sipp_all.do
-		yy=${year:2:2}
 		while [ `ls -l sip${yy}.dta | wc -l` -lt 1 ]; do					# once final .dta is outputted, delete components
 		 	echo "waiting to drop intermediate ${year} files..."
 		 	sleep 100
