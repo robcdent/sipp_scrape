@@ -3,7 +3,7 @@ set tracedepth 1
 set trace on
 set more off
 
-local panel = 1991
+local panel = 2008
 
 * 1990 - 1993: all waves are already merged together for these
 if inrange(`panel',1990,1993) {
@@ -57,10 +57,12 @@ if `panel'==2004 {
       erase sip4w`w'.dta
       erase sipp_4w`w'.dta
     	}
+    *merge in topical module data
+    merge m:1 ssuid eentaid epppnum spanel wave srotaton using "`panel'/sip04tm_a", gen(tmmerge)
     save sip04, replace
     erase sip4w1.dta
 }
-
+  
 if `panel'==2008 {
     erase sipp_8w1.dta
     use sip8w1.dta, clear
@@ -70,6 +72,9 @@ if `panel'==2008 {
       erase sipp_8w`w'.dta
     	display "`w'"
     	}
+
+    *merge in topical module data
+    merge m:1 ssuid eentaid epppnum spanel wave srotaton using "`panel'/sip08tm_a", gen(tmmerge)
     save sip08, replace
     erase sip8w1.dta
 }
@@ -93,6 +98,9 @@ if `panel'==1996 {
       erase sipp_96w`w'.dta
     	display "`w'"
     	}
+
+    *merge in topical module data
+    merge m:1 ssuid eentaid epppnum spanel wave srotaton using "19${panel}/sip${panel}tm_a", gen(tmmerge)
     save sip96, replace
     erase sip96w1.dta
     }
@@ -116,6 +124,10 @@ if `panel'==2001 {
       erase sipp_1w`w'.dta
     	display "`w'"
     	}
+
+    *merge in topical module data
+    merge m:1 ssuid eentaid epppnum spanel wave srotaton using "`panel'/sip01tm_a", gen(tmmerge)
+
     erase sip1w1.dta
     save sip01, replace
     }
